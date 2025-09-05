@@ -1,6 +1,30 @@
 services:
   gateway:
-    build: { context: ../cdc-gateway, dockerfile: build/docker/Dockerfile }
-    environment: [ "CASS_HOSTS=cassandra:9042", "CASS_DC=datacenter1", "CDC_KEYSPACE=cdcgw", "GATEWAY_ADDR=:8088", "METRICS_ADDR=:9108" ]
-    ports: ["8088:8088","9108:9108"]
-    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: build/docker/Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        COMMIT: ${COMMIT:-local}
+        DATE: ${DATE:-now}
+    image: ${REGISTRY:-}${REGISTRY:+/}${IMAGE_NAME:-cdc-gateway}:${TAG:-dev}
+    environment:
+      - CASS_HOSTS=cassandra:9042
+      - CDC_KEYSPACE=cdcgw
+      - DELIVERY_WORKERS=4
+      - PORT=8088
+      - METRICS_PORT=9108
+    ports:
+      - "8088:8088"
+      - "9108:9108"
+    depends_on:
+      - cassandra
+
+  cassandra:
+    image: cassandra:4.1.3
+    ports: ["9042:9042"]
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+
+volumes:
+  cassandra_data:

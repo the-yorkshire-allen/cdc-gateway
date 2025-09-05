@@ -1,0 +1,6 @@
+services:
+  gateway:
+    build: { context: ../cdc-gateway, dockerfile: build/docker/Dockerfile }
+    environment: [ "CASS_HOSTS=cassandra:9042", "CASS_DC=datacenter1", "CDC_KEYSPACE=cdcgw", "GATEWAY_ADDR=:8088", "METRICS_ADDR=:9108" ]
+    ports: ["8088:8088","9108:9108"]
+    restart: unless-stopped
